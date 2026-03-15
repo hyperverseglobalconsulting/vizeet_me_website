@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vizeet Srivastava | Cloud Engineering Consultant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .header {
+            background: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            font-size: 1.2rem;
+            margin: 5px 0 0;
+        }
+        .header .links {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+        }
+        .header .links a {
+            color: #fff;
+            margin-left: 15px;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+        .header .links a:hover {
+            text-decoration: underline;
+        }
+        .nav-tabs {
+            background: #f8f9fa;
+            padding: 10px 20px;
+        }
+        .nav-tabs a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .nav-tabs a:hover {
+            text-decoration: underline;
+        }
+        .section {
+            padding: 40px 20px;
+        }
+        .section:nth-child(even) {
+            background: #f4f4f4;
+        }
+        .project {
+            margin-bottom: 20px;
+        }
+        .project h3 {
+            font-size: 1.5rem;
+        }
+        footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .contact-form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Vizeet Srivastava</h1>
+    <p>Cloud Engineering Consultant</p>
+    <div class="links">
+        <a href="https://www.linkedin.com/in/vizeet-srivastava/" target="_blank">LinkedIn</a>
+        <a href="https://github.com/hyperverseglobalconsulting" target="_blank">GitHub</a>
+    </div>
+</div>
+
+<div class="nav-tabs">
+    <a href="#about">About Me</a>
+    <a href="#projects">Projects</a>
+    <a href="#resume">Public Resume</a>
+    <a href="#certificates">Certificates & Professional Development</a>
+    <a href="#publications">Publications</a>
+    <a href="#skills">Skills</a>
+    <a href="#blogs">Blogs</a>
+    <a href="#contact">Contact Me</a>
+</div>
+
+<div id="about" class="section">
+    <div class="container">
+        <h2>About Me</h2>
+        <p>I am Vizeet Srivastava, a visionary AWS Cloud Consultant and DevOps leader with over 8 years of hands-on experience in transforming cloud strategies into impactful results. My career has been defined by delivering secure, scalable, and efficient cloud solutions that align seamlessly with business objectives.</p>
+        
+        <p>Passionate about innovation, I have consistently driven cost optimizations and operational excellence, achieving milestones like reducing AWS costs by 40% and simplifying Kubernetes infrastructure upgrades. My expertise lies in automating infrastructure provisioning using Terraform and streamlining CI/CD pipelines to enhance deployment efficiency.</p>
+        
+        <p>As a trusted advisor, I specialize in architecting serverless solutions, such as a PDF Analyzer leveraging S3, SQS, Lambda, and DocumentDB, to meet complex client requirements. My dedication to collaboration and problem-solving has empowered teams to excel, fostering a culture of continuous learning and technical excellence.</p>
+        
+        <p>Beyond my technical achievements, I am deeply committed to helping businesses unlock their full potential through strategic cloud adoption and innovative solutions. Whether simplifying infrastructure migrations or leading analytics-driven projects, I strive to exceed client expectations and deliver measurable value.</p>
+    </div>
+</div>
+
+<div id="projects" class="section">
+    <div class="container">
+        <h2>Projects</h2>
+	<div class="project">
+	    <h3><a href="https://github.com/hyperverseglobalconsulting/mongodb_eks" target="_blank">Automated Deployment of MongoDB on AWS EKS Cluster using Infrastructure as a Code</a></h3>
+	    <p>This project automates the deployment of a highly available MongoDB instance on AWS Elastic Kubernetes Service (EKS) using Terraform for infrastructure provisioning and Ansible for configuration management. The solution includes secure access via a bastion host, dynamic storage provisioning with AWS EBS, and integration with AWS Secrets Manager for credential management.</p>
+	    
+	    <h4>Key Features:</h4>
+	    <ul>
+		<li>Infrastructure-as-Code (IaC) with Terraform</li>
+		<li>Kubernetes-native MongoDB deployment</li>
+		<li>Secure access via SSH tunneling and RBAC</li>
+		<li>Automated secrets management</li>
+	    </ul>
+
+	    <h4>Architecture Overview</h4>
+	    <div class="architecture-diagram">
+		<img src="mongodb_eks_architecture.jpg" alt="AWS EKS MongoDB Architecture Diagram" class="responsive-img">
+	    </div>
+	</div>
+	<div class="project">
+	    <h3><a href="https://www.upwork.com/fl/~01db803df1f002dd9e?p=1882227393778372608" target="_blank">Kafka to S3 Data Streaming Pipeline</a></h3>
+	    
+	    <h4>Project Overview:</h4>
+	    <p>In this proof of concept (PoC) project, I designed and built a real-time data streaming pipeline utilizing several AWS services, including AWS Lambda, Kafka, Amazon Kinesis Data Streams (KDS), Kinesis Data Firehose (KDF), and S3. The goal was to create an efficient data ingestion pipeline from a Kafka topic to an S3 bucket using a serverless approach, ensuring resilience with a dead-letter queue setup.</p>
+
+	    <h4>Technologies Used:</h4>
+	    <ul>
+		<li>AWS Secrets Manager (for storing Kafka connection secrets)</li>
+		<li>Kafka (Darwin Pub/Sub, an open data source)</li>
+		<li>AWS Lambda</li>
+		<li>Amazon SQS (as a dead-letter queue)</li>
+		<li>Amazon Kinesis Data Streams (KDS)</li>
+		<li>Amazon Kinesis Data Firehose (KDF)</li>
+		<li>Amazon S3</li>
+	    </ul>
+
+	    <h4>Architecture Overview</h4>
+	    <div class="architecture-diagram">
+		<img src="./kafka_s3_streaming_architecture.jpg" 
+		     alt="Kafka to S3 Streaming Architecture Diagram" 
+		     class="responsive-img">
+	    </div>
+	</div>
+	<div class="project">
+	    <h3><a href="https://github.com/hyperverseglobalconsulting/pdf_data_extraction_statless_comps" target="_blank">Event Driven Serverless Architecture Using ECS Fargate (PDF to DOCX at scale)</a></h3>
+	    
+	    <h4>Project Overview:</h4>
+	    <p>A cloud-native solution that converts PDF files to DOCX format using event-driven serverless architecture. Designed for scalability and cost efficiency, the system automatically processes documents through a coordinated workflow of AWS services:
+
+Triggerless initiation via S3 uploads
+
+Message queuing for fault-tolerant processing
+
+Containerized conversion in isolated Fargate tasks
+
+End-to-end monitoring with CloudWatch integration
+
+Implements infrastructure-as-code (IaC) principles with Terraform for reproducible deployments across environments.</p>
+
+	    <h4>Technologies Used:</h4>
+	    <ul>
+	      <li>AWS Lambda: Event-driven compute layer</li>
+	      <li>Amazon SQS: Message queuing for decoupled processing (used as a dead-letter queue)</li>
+	      <li>Amazon S3: Durable object storage for input/output files</li>
+	      <li>AWS Fargate: Container orchestration with serverless scaling</li>
+	      <li>CloudWatch: Centralized logging and monitoring</li>
+	    </ul>
+
+	    <h4>Architecture Overview</h4>
+	    <div class="architecture-diagram">
+		<img src="./pdf2docx_architecture.jpg" 
+		     alt="PDF to DOCX Architecture Diagram" 
+		     class="responsive-img">
+	    </div>
+	</div>
+	<div class="project">
+	    <h3><a href="https://github.com/hyperverseglobalconsulting/smiles2mol/blob/main/README.md" target="_blank">Serverless Web application on GitHub pages using AWS API Gateway and Lambda</a></h3>
+	    
+	    <h4>Project Overview:</h4>
+	    <p>Convert SMILES notation to molecular structures with serverless AWS backend and GitHub Pages frontend.</p>
+
+	    <h4>Technologies Used:</h4>
+	    <ul>
+		<li>AWS Lambda</li>
+		<li>API Gateway</li>
+		<li>Python</li>
+		<li>RDKit</li>
+		<li>GitHub Pages</li>
+		<li>Amazon Certificate Manager (ACM)</li>
+	    </ul>
+
+	    <h4>Architecture Overview</h4>
+	    <div class="architecture-diagram">
+		<img src="./smiles2mol_architecture.jpg" 
+		     alt="SMILES2Mol Serverless Architecture Diagram" 
+		     class="responsive-img">
+	    </div>
+	</div>
+    </div>
+</div>
+
+<div id="resume" class="section">
+    <div class="container">
+        <h2>Public Resume</h2>
+        <p>You can view my detailed professional resume here: <a href="https://vizeet.me/resume" target="_blank">View Public Resume</a></p>
+    </div>
+</div>
+
+<div id="certificates" class="section">
+    <div class="container">
+        <h2>Certificates & Professional Development</h2>
+        <ul>
+            <li><a href="https://www.credly.com/badges/05d8c10c-283d-42c8-84f3-1c1cbcba3769/public_url" target="_blank">AWS Solution Architect Associate (11/2024 - 11/2027)</a></li>
+            <li><a href="https://www.credly.com/badges/e87b2217-09a5-4456-8877-bbaad4c63e6f/public_url" target="_blank">HashiCorp Terraform Associate (10/2024 - 10/2026)</a></li>
+            <li><a href="https://www.credly.com/badges/45775fe8-e2aa-4456-b449-8034d85edc21/public_url" target="_blank">AWS Big Data Associate (12/2024 - 12/2027)</a></li>
+        </ul>
+    </div>
+</div>
+
+<div id="publications" class="section">
+    <div class="container">
+        <h2>Publications</h2>
+        <p><strong>Book:</strong> <a href="https://www.amazon.com/Exploring-Bitcoin-Blockchain-Transaction-Prevention-ebook/dp/B0B4SR39TY" target="_blank"><em>Exploring Bitcoin with Blockchain</em></a></p>
+        <p>"Demystify Bitcoin by using Python programming."</p>
+    </div>
+</div>
+
+<div id="skills" class="section">
+    <div class="container">
+        <h2>Skills</h2>
+        <ul>
+            <li><strong>Soft Skills:</strong> Collaboration & Teamwork, Problem Solving, Continuous Learning, Leadership, Fostering Innovation</li>
+            <li><strong>DevOps:</strong> Git, CI/CD (GitLab), Jira</li>
+            <li><strong>Cloud:</strong> AWS services (EKS, Databases, Compute, Networking)</li>
+            <li><strong>Monitoring:</strong> Prometheus, Grafana, CloudWatch</li>
+            <li><strong>IaC & Microservices:</strong> Kubernetes, Terraform, Docker</li>
+        </ul>
+    </div>
+</div>
+
+<div id="blogs" class="section">
+    <div class="container">
+        <h2>Blogs</h2>
+        <div class="project">
+            <h3><a href="https://medium.com/@hyperverseglobal/theoretical-deep-dive-into-building-a-data-pipeline-f539883e9b86" target="_blank">Theoretical Deep Dive into Building a Data Pipeline</a></h3>
+            <p>An in-depth exploration of the complexities of building data pipelines, discussing design considerations, challenges, and best practices for efficient data processing and management.</p>
+        </div>
+        <div class="project">
+            <h3><a href="https://medium.com/@hyperverseglobal/reducing-costs-in-an-amazon-eks-kubernetes-environment-4f5317af11a3" target="_blank">Reducing Costs in an Amazon EKS Kubernetes Environment</a></h3>
+            <p>A detailed guide to optimizing costs in Amazon EKS environments, focusing on strategies like autoscaling, rightsizing resources, and leveraging spot instances effectively.</p>
+        </div>
+    </div>
+</div>
+
+<div id="contact" class="section">
+    <div class="container">
+        <h2>Contact Me</h2>
+        <p>Feel free to reach out through the following platforms:</p>
+        <ul>
+            <li><a href="https://www.linkedin.com/in/vizeet-srivastava/" target="_blank">LinkedIn</a></li>
+        </ul>
+        <form class="contact-form" id="contactForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" class="form-control" placeholder="Your Name" required>
+            <label for="message">Message:</label>
+            <textarea id="message" class="form-control" placeholder="Your Message" required></textarea>
+            <button type="submit" class="btn btn-primary mt-2">Send</button>
+        </form>
+        <div id="formMessage" class="mt-3"></div>
+    </div>
+</div>
+<footer>
+    <p>&copy; 2025 Vizeet Srivastava. All Rights Reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const message = document.getElementById('message').value;
+        const formMessage = document.getElementById('formMessage');
+
+        // Simulate form submission
+        formMessage.innerHTML = `<div class='alert alert-success'>Thank you, ${name}. Your message has been sent!</div>`;
+        this.reset();
+    });
+</script>
+</body>
+</html>
+
