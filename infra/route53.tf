@@ -10,7 +10,7 @@ resource "aws_route53_record" "cert_validation" {
   name    = "_2b91f3766875ebc863c64ea70722a625.${var.domain_name}"
   type    = "CNAME"
   ttl     = 300
-  records = ["_f6ac3c59632723f5efed8b481c546b4a.djqtsrsxkq.acm-validations.aws."]
+  records = ["_f6ad3c59632723f5efed8b481c546b4a.djqtsrsxkq.acm-validations.aws."]
 
   allow_overwrite = true
 }

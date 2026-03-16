@@ -21,6 +21,8 @@ resource "aws_s3_bucket_versioning" "website" {
   bucket   = aws_s3_bucket.website.id
 
   versioning_configuration {
+    # NOTE: versioning was previously Disabled on the bucket.
+    # Setting to Enabled is an intentional improvement for this managed state.
     status = "Enabled"
   }
 }
@@ -30,6 +32,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
   bucket   = aws_s3_bucket.website.id
 
   rule {
+    # bucket_key_enabled = true matches the actual bucket configuration
+    bucket_key_enabled = true
+
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
@@ -44,11 +49,13 @@ resource "aws_s3_bucket_policy" "website" {
   provider = aws.us_east_2
   bucket   = aws_s3_bucket.website.id
 
+  # Policy matches the actual bucket policy exactly (Id, Version, Sid preserved)
   policy = jsonencode({
-    Version = "2012-10-17"
+    Id      = "PolicyForCloudFrontPrivateContent"
+    Version = "2008-10-17"
     Statement = [
       {
-        Sid    = "AllowCloudFrontAccess"
+        Sid    = "AllowCloudFrontServicePrincipal"
         Effect = "Allow"
         Principal = {
           Service = "cloudfront.amazonaws.com"

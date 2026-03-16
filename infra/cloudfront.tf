@@ -15,41 +15,43 @@ resource "aws_cloudfront_distribution" "website" {
 
   origin {
     domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
-    origin_id                = "S3-${var.bucket_name}"
+    # origin_id must match the actual value in CloudFront (not a custom label)
+    origin_id                = "my-portfolio-website-bucket.s3.us-east-2.amazonaws.com"
     origin_access_control_id = aws_cloudfront_origin_access_control.website.id
   }
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "S3-${var.bucket_name}"
+    target_origin_id = "my-portfolio-website-bucket.s3.us-east-2.amazonaws.com"
 
-    forwarded_values {
-      query_string = false
-
-      cookies {
-        forward = "none"
-      }
-    }
+    # AWS Managed Cache Policy: CachingOptimized
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+    # ID: 658327ea-f89d-4fab-a63d-7e88639e58f6
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
 
     viewer_protocol_policy = "redirect-to-https"
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
     compress               = true
+
+    # CloudFront Function: restricts access to only the registered domain (vizeet.me)
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = "arn:aws:cloudfront::093487613626:function/allow-access-to-only-registered-domain"
+    }
   }
 
-  custom_error_response {
-    error_code         = 404
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-
-  custom_error_response {
-    error_code         = 403
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
+  # NOTE: 403/404 custom error responses are NOT currently configured on the distribution.
+  # Uncomment below to enable SPA-style error routing (serves index.html for 403/404):
+  # custom_error_response {
+  #   error_code         = 403
+  #   response_code      = 200
+  #   response_page_path = "/index.html"
+  # }
+  # custom_error_response {
+  #   error_code         = 404
+  #   response_code      = 200
+  #   response_page_path = "/index.html"
+  # }
 
   restrictions {
     geo_restriction {

@@ -15,8 +15,6 @@ resource "aws_acm_certificate" "website" {
   }
 }
 
-resource "aws_acm_certificate_validation" "website" {
-  provider        = aws
-  certificate_arn = aws_acm_certificate.website.arn
-  validation_record_fqdns = [aws_route53_record.cert_validation.fqdn]
-}
+# NOTE: aws_acm_certificate_validation intentionally omitted.
+# The certificate is already in "Issued" state and DNS validation is complete.
+# The validation CNAME record is managed separately as aws_route53_record.cert_validation.
