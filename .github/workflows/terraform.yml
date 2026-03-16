@@ -19,7 +19,7 @@ env:
   AWS_ROLE_ARN: 'arn:aws:iam::093487613626:role/github-actions-vizeet-me-website'
 
 jobs:
-  # ── Step 1: Always runs — no AWS credentials needed ──────────────────────
+  # ── Job 1: Validate — no AWS credentials needed, runs on all events ───────
   terraform-validate:
     name: Terraform Validate
     runs-on: ubuntu-latest
@@ -45,16 +45,17 @@ jobs:
         run: terraform validate
         working-directory: ./infra
 
-  # ── Step 2: Plan — runs on both push and PR ───────────────────────────────
+  # ── Job 2: Plan only — runs on Pull Requests, posts output as PR comment ──
   terraform-plan:
-    name: Terraform Plan
+    name: Terraform Plan (PR Preview)
     runs-on: ubuntu-latest
     needs: terraform-validate
+    if: github.event_name == 'pull_request'
 
     permissions:
-      id-token: write     # Required for OIDC token exchange
+      id-token: write
       contents: read
-      pull-requests: write # Required to post plan as PR comment
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -82,7 +83,7 @@ jobs:
 
       - name: Post Plan to PR
         uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
+        if: always()
         with:
           script: |
             const fs = require('fs');
@@ -98,15 +99,17 @@ jobs:
               body: `## 📋 Terraform Plan\n\`\`\`\n${truncated}\n\`\`\``
             });
 
-  # ── Step 3: Apply — only on push to main, after plan succeeds ────────────
-  terraform-apply:
-    name: Terraform Apply
+  # ── Job 3: Plan + Apply — runs on push to main, in the SAME job ──────────
+  # Plan output (tfplan file) is saved and used directly by apply
+  # so no drift can occur between planning and applying.
+  terraform-deploy:
+    name: Terraform Plan + Apply
     runs-on: ubuntu-latest
-    needs: terraform-plan   # Must wait for plan to succeed
+    needs: terraform-validate
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     permissions:
-      id-token: write     # Required for OIDC token exchange
+      id-token: write
       contents: read
 
     steps:
@@ -128,6 +131,10 @@ jobs:
         run: terraform init
         working-directory: ./infra
 
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan -no-color
+        working-directory: ./infra
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve tfplan
         working-directory: ./infra
