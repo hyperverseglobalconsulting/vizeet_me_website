@@ -129,7 +129,8 @@ resource "aws_iam_role_policy" "github_actions" {
           "s3:ListBucket",
           "s3:GetObject",
           "s3:PutObject",
-          "s3:DeleteObject"
+          "s3:DeleteObject",
+          "s3:GetBucketWebsite" # Required by AWS provider during state refresh
         ]
         Resource = [
           "arn:aws:s3:::my-portfolio-website-bucket",
@@ -183,6 +184,22 @@ resource "aws_iam_role_policy" "github_actions" {
           "route53:ChangeResourceRecordSets",
           "route53:GetChange",
           "route53:ListTagsForResource"
+        ]
+        Resource = "*"
+      },
+
+      # ── IAM (read-only — required for Terraform to refresh IAM resources) ─
+      {
+        Sid    = "IAMReadOnly"
+        Effect = "Allow"
+        Action = [
+          "iam:GetOpenIDConnectProvider",
+          "iam:ListOpenIDConnectProviderTags",
+          "iam:GetRole",
+          "iam:GetRolePolicy",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListRoleTags"
         ]
         Resource = "*"
       }
