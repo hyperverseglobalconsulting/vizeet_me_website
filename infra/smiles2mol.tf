@@ -52,7 +52,7 @@ resource "aws_ecr_lifecycle_policy" "rdkit_lambda" {
 # To find the role name: aws lambda get-function-configuration
 #   --function-name rdkit-lambda --region us-east-2 --query Role
 data "aws_iam_role" "rdkit_lambda" {
-  name = "rdkit-lambda-role" # adjust if actual name differs
+  name = "rdkit-lambda-role-a2973bwz" # service-role created by Lambda console
 }
 
 # ── Lambda function (container image) ──────────────────────────────────────
