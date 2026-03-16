@@ -178,7 +178,7 @@ resource "aws_iam_role_policy" "github_actions" {
         Resource = "*"
       },
 
-      # ── IAM (read-only — required for Terraform to refresh IAM resources) ─
+      # ── IAM (read + manage smiles2mol Lambda role) ─────────────────────
       {
         Sid    = "IAMReadOnly"
         Effect = "Allow"
@@ -192,6 +192,89 @@ resource "aws_iam_role_policy" "github_actions" {
           "iam:ListRoleTags"
         ]
         Resource = "*"
+      },
+
+      # ── IAM — create/manage smiles2mol Lambda execution role ────────────
+      {
+        Sid    = "IAMSmiles2Mol"
+        Effect = "Allow"
+        Action = [
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:PutRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:TagRole",
+          "iam:UntagRole",
+          "iam:PassRole" # Required for Lambda to assume its execution role
+        ]
+        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/smiles2mol-*"
+      },
+
+      # ── ECR — push Docker images for smiles2mol Lambda ───────────────────
+      {
+        Sid    = "ECRSmiles2Mol"
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutImage",
+          "ecr:DescribeRepositories",
+          "ecr:CreateRepository",
+          "ecr:DeleteRepository",
+          "ecr:PutLifecyclePolicy",
+          "ecr:GetLifecyclePolicy",
+          "ecr:ListTagsForResource",
+          "ecr:TagResource",
+          "ecr:DescribeImages",
+          "ecr:GetRepositoryPolicy",
+          "ecr:SetRepositoryPolicy",
+          "ecr:DeleteRepositoryPolicy",
+          "ecr:BatchDeleteImage"
+        ]
+        Resource = "*"
+      },
+
+      # ── Lambda — manage smiles2mol function ──────────────────────────────
+      {
+        Sid    = "LambdaSmiles2Mol"
+        Effect = "Allow"
+        Action = [
+          "lambda:CreateFunction",
+          "lambda:DeleteFunction",
+          "lambda:GetFunction",
+          "lambda:GetFunctionConfiguration",
+          "lambda:UpdateFunctionCode",
+          "lambda:UpdateFunctionConfiguration",
+          "lambda:AddPermission",
+          "lambda:RemovePermission",
+          "lambda:GetPolicy",
+          "lambda:ListVersionsByFunction",
+          "lambda:TagResource",
+          "lambda:UntagResource",
+          "lambda:ListTags"
+        ]
+        Resource = "arn:aws:lambda:us-east-2:${data.aws_caller_identity.current.account_id}:function:rdkit-lambda"
+      },
+
+      # ── API Gateway — manage RDKitRESTAPI + custom domain (us-east-2) ────────
+      {
+        Sid    = "APIGatewaySmiles2Mol"
+        Effect = "Allow"
+        Action = [
+          "apigateway:GET",
+          "apigateway:POST",
+          "apigateway:PUT",
+          "apigateway:PATCH",
+          "apigateway:DELETE"
+        ]
+        Resource = "arn:aws:apigateway:us-east-2::*"
       }
 
     ]

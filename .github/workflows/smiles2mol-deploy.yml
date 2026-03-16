@@ -1,0 +1,71 @@
+name: Deploy smiles2mol (rdkit-lambda)
+
+# Triggers when smiles2mol source code changes on main.
+# Builds the Docker container, pushes to ECR (rdkit-lambda), and updates
+# the rdkit-lambda function in us-east-2 — which serves projects.vizeet.me/smiles2mol.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'smiles2mol/**'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: 'us-east-2'                  # All smiles2mol resources are in us-east-2
+  AWS_ROLE_ARN: 'arn:aws:iam::093487613626:role/github-actions-vizeet-me-website'
+  ECR_REPOSITORY: 'rdkit-lambda'           # Existing ECR repo name
+  LAMBDA_FUNCTION_NAME: 'rdkit-lambda'     # Existing Lambda function name
+
+jobs:
+  deploy:
+    name: Build & Deploy rdkit-lambda
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Docker image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            ./smiles2mol
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update Lambda function with new image
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --image-uri ${{ steps.build-image.outputs.image }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Wait for Lambda update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ rdkit-lambda updated — projects.vizeet.me/smiles2mol is live."
