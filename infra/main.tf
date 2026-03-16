@@ -42,3 +42,6 @@ provider "aws" {
     }
   }
 }
+
+# Used to dynamically reference the AWS account ID in IAM policies
+data "aws_caller_identity" "current" {}
