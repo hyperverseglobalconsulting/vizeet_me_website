@@ -3,23 +3,19 @@ data "aws_route53_zone" "website" {
   private_zone = false
 }
 
+# ACM DNS validation CNAME — static definition (cert covers vizeet.me only, no SANs)
+# Actual record: _2b91f3766875ebc863c64ea70722a625.vizeet.me → acm-validations.aws.
 resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.website.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
+  zone_id = data.aws_route53_zone.website.zone_id
+  name    = "_2b91f3766875ebc863c64ea70722a625.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["_f6ac3c59632723f5efed8b481c546b4a.djqtsrsxkq.acm-validations.aws."]
 
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  ttl             = 60
-  type            = each.value.type
-  zone_id         = data.aws_route53_zone.website.zone_id
 }
 
+# vizeet.me A record — Alias to CloudFront distribution
 resource "aws_route53_record" "website" {
   zone_id = data.aws_route53_zone.website.zone_id
   name    = var.domain_name
