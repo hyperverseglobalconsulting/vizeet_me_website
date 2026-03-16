@@ -1,29 +1,20 @@
 # =============================================================================
-# smiles2mol — Existing AWS infrastructure imported into Terraform (us-east-2)
+# smiles2mol — AWS infrastructure (us-east-2) managed as Terraform
 # =============================================================================
-# All resources below already exist. They were created manually and are being
-# brought under Terraform management via `terraform import`.
+# Existing resources (created manually before this repo existed):
+#   ECR:      rdkit-lambda         → imported via terraform import
+#   Lambda:   rdkit-lambda         → imported via terraform import
+#   Route53:  projects.vizeet.me A record → uses allow_overwrite
 #
-# Architecture:
-#   GitHub Pages (webpage.html)
-#     → POST https://projects.vizeet.me/smiles2mol
-#     → API Gateway custom domain (projects.vizeet.me, us-east-2)
-#     → RDKitRESTAPI (lyjh31sb0b) /smiles2mol POST → rdkit-lambda
-#     → ECR image: 093487613626.dkr.ecr.us-east-2.amazonaws.com/rdkit-lambda:latest
-#
-# Import commands (run once to adopt existing state):
-#   terraform import -var-file=... aws_ecr_repository.rdkit_lambda rdkit-lambda
-#   terraform import aws_lambda_function.rdkit_lambda rdkit-lambda        (us-east-2)
-#   terraform import aws_api_gateway_rest_api.rdkit lyjh31sb0b            (us-east-2)
-#   terraform import aws_api_gateway_domain_name.projects projects.vizeet.me (us-east-2)
-#   terraform import aws_api_gateway_base_path_mapping.smiles2mol projects.vizeet.me//  (us-east-2)
-#   terraform import aws_route53_record.projects Z048158418ZLZ49BS7SKI_projects.vizeet.me_A
+# IMPORT COMMANDS (run once from CloudShell after terraform init):
+#   terraform import -chdir=infra aws_ecr_repository.rdkit_lambda rdkit-lambda
+#   terraform import -chdir=infra aws_lambda_function.rdkit_lambda rdkit-lambda
+#   terraform import -chdir=infra aws_route53_record.projects \
+#     Z048158418ZLZ49BS7SKI_projects.vizeet.me_A
 # =============================================================================
-
-# ── Provider alias for us-east-2 (already declared in main.tf) ────────────
-# All smiles2mol resources use the aws.us_east_2 provider alias.
 
 # ── ECR Repository ─────────────────────────────────────────────────────────
+# Import: terraform import aws_ecr_repository.rdkit_lambda rdkit-lambda
 resource "aws_ecr_repository" "rdkit_lambda" {
   provider             = aws.us_east_2
   name                 = "rdkit-lambda"
@@ -56,48 +47,35 @@ resource "aws_ecr_lifecycle_policy" "rdkit_lambda" {
   })
 }
 
-# ── Lambda execution role ───────────────────────────────────────────────────
-resource "aws_iam_role" "rdkit_lambda" {
-  name        = "rdkit-lambda-execution-role"
-  description = "Execution role for rdkit-lambda function (smiles2mol)"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "lambda.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
-  })
-
-  tags = { Name = "rdkit-lambda-role" }
-}
-
-resource "aws_iam_role_policy_attachment" "rdkit_lambda_basic" {
-  role       = aws_iam_role.rdkit_lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# ── Lambda execution role (data source — role already exists) ───────────────
+# We reference the existing role rather than recreating it.
+# To find the role name: aws lambda get-function-configuration
+#   --function-name rdkit-lambda --region us-east-2 --query Role
+data "aws_iam_role" "rdkit_lambda" {
+  name = "rdkit-lambda-role" # adjust if actual name differs
 }
 
 # ── Lambda function (container image) ──────────────────────────────────────
+# Import: terraform import aws_lambda_function.rdkit_lambda rdkit-lambda
 resource "aws_lambda_function" "rdkit_lambda" {
   provider      = aws.us_east_2
   function_name = "rdkit-lambda"
-  role          = aws_iam_role.rdkit_lambda.arn
+  role          = data.aws_iam_role.rdkit_lambda.arn
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.rdkit_lambda.repository_url}:latest"
   timeout       = 30
   memory_size   = 128
 
   lifecycle {
-    # CI pipeline updates the image via `aws lambda update-function-code`.
+    # The CI pipeline updates image_uri via `aws lambda update-function-code`.
     # Prevent Terraform from reverting that on the next apply.
-    ignore_changes = [image_uri]
+    ignore_changes = [image_uri, role]
   }
 
   tags = { Name = "rdkit-lambda" }
 }
 
-# Allow API Gateway (RDKitRESTAPI) to invoke rdkit-lambda
+# Allow API Gateway (RDKitRESTAPI lyjh31sb0b) to invoke rdkit-lambda
 resource "aws_lambda_permission" "rdkit_lambda_apigw" {
   provider      = aws.us_east_2
   statement_id  = "01ecd21a-272f-555b-97b6-d76e65740979"
@@ -108,10 +86,13 @@ resource "aws_lambda_permission" "rdkit_lambda_apigw" {
 }
 
 # ── Route53 A record: projects.vizeet.me → API Gateway regional domain ─────
+# Import: terraform import aws_route53_record.projects \
+#   Z048158418ZLZ49BS7SKI_projects.vizeet.me_A
 resource "aws_route53_record" "projects" {
-  zone_id = data.aws_route53_zone.website.zone_id
-  name    = "projects.vizeet.me"
-  type    = "A"
+  zone_id         = data.aws_route53_zone.website.zone_id
+  name            = "projects.vizeet.me"
+  type            = "A"
+  allow_overwrite = true # Record already exists — overwrite rather than error
 
   alias {
     name                   = "d-npjc1qezy0.execute-api.us-east-2.amazonaws.com"
