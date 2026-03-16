@@ -142,7 +142,8 @@ resource "aws_iam_role_policy" "github_actions" {
           "cloudfront:ListOriginAccessControls",
           "cloudfront:TagResource",
           "cloudfront:UntagResource",
-          "cloudfront:ListTagsForResource"
+          "cloudfront:ListTagsForResource",
+          "cloudfront:CreateInvalidation" # Required for cache busting after S3 deploy
         ]
         Resource = "*"
       },

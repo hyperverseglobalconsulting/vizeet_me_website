@@ -6,30 +6,51 @@ on:
       - main
     paths:
       - 'website/**'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'website/**'
   workflow_dispatch:
+
+env:
+  AWS_REGION: 'us-east-1'
+  AWS_ROLE_ARN: 'arn:aws:iam::093487613626:role/github-actions-vizeet-me-website'
+  S3_BUCKET: 'my-portfolio-website-bucket'
+  CF_DISTRIBUTION_ID: 'E1LQW0IG8J5R8W'
 
 jobs:
   deploy:
+    name: Deploy to S3 + CloudFront
     runs-on: ubuntu-latest
-    
+
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          node-version: '20'
-      
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/main'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./website
-          publish_branch: gh-pages
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync website to S3
+        run: |
+          aws s3 sync ./website s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=31536000" \
+            --exclude "*.html" \
+            --region us-east-2
+
+          # HTML files: no-cache so browsers always get latest
+          aws s3 sync ./website s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --include "*.html" \
+            --exclude "*.*" \
+            --region us-east-2
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CF_DISTRIBUTION_ID }} \
+            --paths "/*"
