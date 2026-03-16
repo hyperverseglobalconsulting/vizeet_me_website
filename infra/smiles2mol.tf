@@ -63,13 +63,13 @@ resource "aws_lambda_function" "rdkit_lambda" {
   role          = data.aws_iam_role.rdkit_lambda.arn
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.rdkit_lambda.repository_url}:latest"
-  timeout       = 30
+  timeout       = 843  # intentionally high — complex SMILES can be slow to render
   memory_size   = 128
 
   lifecycle {
     # The CI pipeline updates image_uri via `aws lambda update-function-code`.
     # Prevent Terraform from reverting that on the next apply.
-    ignore_changes = [image_uri, role]
+    ignore_changes = [image_uri, role, timeout]
   }
 
   tags = { Name = "rdkit-lambda" }
