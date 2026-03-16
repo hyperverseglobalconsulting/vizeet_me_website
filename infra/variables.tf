@@ -1,3 +1,5 @@
+# Infrastructure variables for vizeet.me website
+
 variable "aws_region" {
   description = "AWS region for CloudFront, ACM, Route53, and Terraform backend"
   type        = string
