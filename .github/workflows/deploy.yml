@@ -42,11 +42,13 @@ jobs:
             --region us-east-2
 
           # HTML files: no-cache so browsers always get latest
+          # NOTE: --exclude must come BEFORE --include; aws s3 sync applies
+          # filters in order, so a trailing --exclude "*.*" would override --include "*.html"
           aws s3 sync ./website s3://${{ env.S3_BUCKET }} \
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
-            --include "*.html" \
             --exclude "*.*" \
+            --include "*.html" \
             --region us-east-2
 
       - name: Invalidate CloudFront cache
