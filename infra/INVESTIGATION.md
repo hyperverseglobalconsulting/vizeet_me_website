@@ -1,124 +1,75 @@
-# Infrastructure Investigation Guide
+# vizeet.me Infrastructure — Current State
 
-This guide helps you investigate existing AWS resources before importing them into Terraform.
+> Last updated: 2026-03-16 | Status: ✅ Fully managed by Terraform
 
-## Step 1: Identify Existing Resources
+## Architecture
 
-### S3 Buckets
-```bash
-aws s3 ls
-aws s3api list-buckets --query 'Buckets[].Name'
+```
+vizeet.me (Route53)
+    │
+    ▼
+CloudFront Distribution (E1LQW0IG8J5R8W)
+    │  - Domain: d3fenqv7dmjqzy.cloudfront.net
+    │  - SSL: ACM cert (71bd0b95-...) us-east-1
+    │  - Cache: Managed-CachingOptimized policy
+    │  - Function: allow-access-to-only-registered-domain (viewer-request)
+    │
+    ▼
+S3 Bucket: my-portfolio-website-bucket (us-east-2 / Ohio)
+    │  - Access: CloudFront OAC only (E2991YTMJ4THM3)
+    │  - Public access: blocked
+    │  - Versioning: enabled
+    │  - Encryption: AES256 + bucket key
 ```
 
-For each bucket related to the website:
-```bash
-aws s3api get-bucket-location --bucket <bucket-name>
-aws s3api get-bucket-versioning --bucket <bucket-name>
-aws s3api get-bucket-encryption --bucket <bucket-name>
-aws s3api get-bucket-website --bucket <bucket-name>
-aws s3api get-public-access-block --bucket <bucket-name>
-```
+## Resource Inventory
 
-### CloudFront Distributions
-```bash
-aws cloudfront list-distributions --query 'DistributionList.Items[*].[Id,DomainName,Origins.Items[0].DomainName]' --output table
-```
+| Resource | Type | ID / Name |
+|---|---|---|
+| S3 website bucket | `aws_s3_bucket` | `my-portfolio-website-bucket` (us-east-2) |
+| S3 public access block | `aws_s3_bucket_public_access_block` | same |
+| S3 versioning | `aws_s3_bucket_versioning` | Enabled |
+| S3 encryption | `aws_s3_bucket_server_side_encryption_configuration` | AES256 |
+| S3 bucket policy | `aws_s3_bucket_policy` | CloudFront OAC only |
+| CloudFront OAC | `aws_cloudfront_origin_access_control` | `E2991YTMJ4THM3` |
+| CloudFront distribution | `aws_cloudfront_distribution` | `E1LQW0IG8J5R8W` |
+| ACM certificate | `aws_acm_certificate` | `71bd0b95-7e3f-449d-998e-0bc57372fc56` |
+| Route53 zone | data source | `Z048158418ZLZ49BS7SKI` |
+| Route53 A record | `aws_route53_record` | `vizeet.me → CloudFront` |
+| Route53 CNAME | `aws_route53_record` | ACM validation record |
+| GitHub OIDC provider | `aws_iam_openid_connect_provider` | `token.actions.githubusercontent.com` |
+| GitHub Actions IAM role | `aws_iam_role` | `github-actions-vizeet-me-website` |
+| IAM inline policy | `aws_iam_role_policy` | `vizeet-me-website-ci-policy` |
 
-For each distribution:
-```bash
-aws cloudfront get-distribution --id <distribution-id>
-aws cloudfront get-distribution-config --id <distribution-id> > cloudfront-config.json
-```
+## Terraform Backend
 
-### Route53 Hosted Zones
-```bash
-aws route53 list-hosted-zones
-aws route53 list-hosted-zones-by-name --dns-name vizeet.me
-```
+| Resource | Value |
+|---|---|
+| State bucket | `vizeet-me-terraform-state` (us-east-1) |
+| State key | `website/terraform.tfstate` |
+| Lock table | `terraform-state-lock` (DynamoDB, us-east-1) |
 
-For each hosted zone:
-```bash
-aws route53 list-resource-record-sets --hosted-zone-id <zone-id>
-```
+## CI/CD Pipeline
 
-### ACM Certificates
-```bash
-aws acm list-certificates --region us-east-1
-```
+**Authentication**: GitHub OIDC → IAM role `github-actions-vizeet-me-website`
+- No static AWS credentials stored anywhere
+- Role restricted to `repo:hyperverseglobalconsulting/vizeet_me_website:*`
 
-For each certificate:
-```bash
-aws acm describe-certificate --certificate-arn <cert-arn> --region us-east-1
-```
+**Triggers**:
+- `push` to `main` with `infra/**` changes → `terraform apply -auto-approve`
+- `pull_request` to `main` with `infra/**` changes → `terraform plan` (posted as PR comment)
+- `workflow_dispatch` → manual trigger
 
-### CloudFront Origin Access Control
-```bash
-aws cloudfront list-origin-access-controls
-```
+## Making Infrastructure Changes
 
-## Step 2: Document Current State
+1. Edit `.tf` files in `infra/`
+2. Run `terraform fmt -recursive ./infra/` locally
+3. Open a PR → pipeline posts `terraform plan` as a comment
+4. Merge → pipeline runs `terraform apply` automatically
 
-Create a file `current-state.md` documenting:
-- All resource IDs, ARNs, and names
-- Current configurations
-- Dependencies between resources
-- Any custom settings or tags
+## Key Notes
 
-## Step 3: Prepare Import Commands
-
-Based on the investigation, prepare import commands. Example:
-
-```bash
-# Import S3 bucket
-terraform import aws_s3_bucket.website <bucket-name>
-
-# Import CloudFront distribution
-terraform import aws_cloudfront_distribution.website <distribution-id>
-
-# Import Route53 zone
-terraform import aws_route53_zone.website <zone-id>
-
-# Import Route53 records
-terraform import aws_route53_record.website <zone-id>_<record-name>_<record-type>
-
-# Import ACM certificate
-terraform import aws_acm_certificate.website <certificate-arn>
-```
-
-## Step 4: Create Import Script
-
-Use the `import.sh` script to automate the import process after documenting all resources.
-
-## Step 5: Verify Import
-
-After importing:
-```bash
-terraform plan
-```
-
-This should show "No changes" if all resources are correctly imported and match the Terraform configuration.
-
-## Important Notes
-
-1. **Backup First**: Document everything before making changes
-2. **Test in Stages**: Import one resource type at a time
-3. **Verify State**: Always run `terraform plan` after imports
-4. **Update Config**: Adjust Terraform files to match actual resource configurations
-5. **State File**: Ensure your state file is properly backed up
-
-## Common Issues
-
-### Resource Already Exists
-If Terraform says a resource already exists, it may need to be imported first.
-
-### Configuration Mismatch
-If `terraform plan` shows changes after import, update your `.tf` files to match the actual resource configuration.
-
-### Missing Dependencies
-Some resources depend on others. Import in this order:
-1. S3 buckets
-2. ACM certificates
-3. CloudFront OAC
-4. CloudFront distributions
-5. Route53 zones
-6. Route53 records
+- **S3 bucket region**: `us-east-2` (Ohio) — uses `aws.us_east_2` provider alias
+- **ACM cert region**: `us-east-1` (required for CloudFront)
+- **CloudFront function**: `allow-access-to-only-registered-domain` — do NOT remove
+- **www.vizeet.me**: No DNS record exists — add `aws_route53_record.website_www` if needed
