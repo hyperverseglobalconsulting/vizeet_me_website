@@ -108,29 +108,18 @@ resource "aws_iam_role_policy" "github_actions" {
         Sid    = "WebsiteBucket"
         Effect = "Allow"
         Action = [
-          "s3:GetBucketLocation",
-          "s3:GetBucketVersioning",
-          "s3:PutBucketVersioning",
-          "s3:GetBucketPolicy",
-          "s3:PutBucketPolicy",
-          "s3:GetBucketPublicAccessBlock",
-          "s3:PutBucketPublicAccessBlock",
-          "s3:GetEncryptionConfiguration",
-          "s3:PutEncryptionConfiguration",
-          "s3:GetBucketTagging",
-          "s3:PutBucketTagging",
-          "s3:GetBucketAcl",
-          "s3:GetBucketLogging",
-          "s3:GetBucketRequestPayment",
-          "s3:GetLifecycleConfiguration",
-          "s3:GetBucketCORS",
-          "s3:GetBucketObjectLockConfiguration",
-          "s3:GetReplicationConfiguration",
+          # s3:Get* covers all read operations the AWS provider needs during
+          # state refresh (location, versioning, encryption, website, accelerate,
+          # acl, cors, logging, notifications, replication, object-lock, etc.)
+          "s3:Get*",
           "s3:ListBucket",
-          "s3:GetObject",
+          "s3:PutBucketVersioning",
+          "s3:PutBucketPolicy",
+          "s3:PutBucketPublicAccessBlock",
+          "s3:PutEncryptionConfiguration",
+          "s3:PutBucketTagging",
           "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:GetBucketWebsite" # Required by AWS provider during state refresh
+          "s3:DeleteObject"
         ]
         Resource = [
           "arn:aws:s3:::my-portfolio-website-bucket",
