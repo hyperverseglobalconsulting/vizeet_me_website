@@ -1,5 +1,5 @@
 resource "aws_cloudfront_origin_access_control" "website" {
-  name                              = "vizeet-me-website-oac"
+  name                              = "my-portfolio-website-bucket.s3.us-east-2.amazonaws.com"
   description                       = "OAC for vizeet.me website"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
@@ -10,7 +10,7 @@ resource "aws_cloudfront_distribution" "website" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  price_class         = "PriceClass_100"
+  price_class         = "PriceClass_All"
   aliases             = [var.domain_name]
 
   origin {

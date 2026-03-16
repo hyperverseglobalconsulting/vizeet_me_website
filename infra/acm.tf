@@ -3,9 +3,8 @@ resource "aws_acm_certificate" "website" {
   domain_name       = var.domain_name
   validation_method = "DNS"
 
-  subject_alternative_names = [
-    "www.${var.domain_name}"
-  ]
+  # NOTE: Actual cert has no SANs - only covers vizeet.me (0 additional names)
+  # subject_alternative_names removed to match existing certificate
 
   lifecycle {
     create_before_destroy = true

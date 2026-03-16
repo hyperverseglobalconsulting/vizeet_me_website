@@ -28,3 +28,17 @@ provider "aws" {
     }
   }
 }
+
+# S3 bucket lives in us-east-2 (Ohio) — separate provider alias required
+provider "aws" {
+  alias  = "us_east_2"
+  region = var.bucket_region
+
+  default_tags {
+    tags = {
+      Project     = "vizeet-me-website"
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
+  }
+}

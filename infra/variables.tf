@@ -1,7 +1,13 @@
 variable "aws_region" {
-  description = "AWS region for resources"
+  description = "AWS region for CloudFront, ACM, Route53, and Terraform backend"
   type        = string
   default     = "us-east-1"
+}
+
+variable "bucket_region" {
+  description = "AWS region where the S3 website bucket lives (us-east-2 / Ohio)"
+  type        = string
+  default     = "us-east-2"
 }
 
 variable "environment" {
@@ -19,5 +25,5 @@ variable "domain_name" {
 variable "bucket_name" {
   description = "S3 bucket name for website hosting"
   type        = string
-  default     = "vizeet-me-website"
+  default     = "my-portfolio-website-bucket"
 }

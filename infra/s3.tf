@@ -1,9 +1,14 @@
+# NOTE: Bucket 'my-portfolio-website-bucket' is in us-east-2 (Ohio)
+# All S3 resources must use the aws.us_east_2 provider alias
+
 resource "aws_s3_bucket" "website" {
-  bucket = var.bucket_name
+  provider = aws.us_east_2
+  bucket   = var.bucket_name
 }
 
 resource "aws_s3_bucket_public_access_block" "website" {
-  bucket = aws_s3_bucket.website.id
+  provider = aws.us_east_2
+  bucket   = aws_s3_bucket.website.id
 
   block_public_acls       = true
   block_public_policy     = true
@@ -12,7 +17,8 @@ resource "aws_s3_bucket_public_access_block" "website" {
 }
 
 resource "aws_s3_bucket_versioning" "website" {
-  bucket = aws_s3_bucket.website.id
+  provider = aws.us_east_2
+  bucket   = aws_s3_bucket.website.id
 
   versioning_configuration {
     status = "Enabled"
@@ -20,7 +26,8 @@ resource "aws_s3_bucket_versioning" "website" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
-  bucket = aws_s3_bucket.website.id
+  provider = aws.us_east_2
+  bucket   = aws_s3_bucket.website.id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -29,27 +36,20 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
   }
 }
 
-resource "aws_s3_bucket_website_configuration" "website" {
-  bucket = aws_s3_bucket.website.id
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "index.html"
-  }
-}
+# NOTE: aws_s3_bucket_website_configuration intentionally omitted.
+# This bucket uses CloudFront + OAC for direct S3 access — static website
+# hosting is NOT enabled on the bucket (confirmed via get-bucket-website).
 
 resource "aws_s3_bucket_policy" "website" {
-  bucket = aws_s3_bucket.website.id
+  provider = aws.us_east_2
+  bucket   = aws_s3_bucket.website.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowCloudFrontAccess"
-        Effect    = "Allow"
+        Sid    = "AllowCloudFrontAccess"
+        Effect = "Allow"
         Principal = {
           Service = "cloudfront.amazonaws.com"
         }

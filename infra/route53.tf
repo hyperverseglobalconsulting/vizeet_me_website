@@ -32,14 +32,5 @@ resource "aws_route53_record" "website" {
   }
 }
 
-resource "aws_route53_record" "website_www" {
-  zone_id = data.aws_route53_zone.website.zone_id
-  name    = "www.${var.domain_name}"
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.website.domain_name
-    zone_id                = aws_cloudfront_distribution.website.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
+# NOTE: www.vizeet.me A record does not exist in Route53 - omitted intentionally
+# Add back if/when www subdomain is needed
