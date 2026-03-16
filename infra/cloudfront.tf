@@ -14,7 +14,7 @@ resource "aws_cloudfront_distribution" "website" {
   aliases             = [var.domain_name]
 
   origin {
-    domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.website.bucket_regional_domain_name
     # origin_id must match the actual value in CloudFront (not a custom label)
     origin_id                = "my-portfolio-website-bucket.s3.us-east-2.amazonaws.com"
     origin_access_control_id = aws_cloudfront_origin_access_control.website.id
